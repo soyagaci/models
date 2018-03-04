@@ -1,0 +1,33 @@
+{
+  "name": "@soyagaci/models",
+  "version": "1.0.1",
+  "description": "Soyağacı ile çalışmak için gerekli olan temel modeller",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soyagaci/models.git"
+  },
+  "keywords": [
+    "soyagaci",
+    "models",
+    "typescript"
+  ],
+  "author": "Yengas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/soyagaci/models/issues"
+  },
+  "homepage": "https://github.com/soyagaci/models#readme",
+  "devDependencies": {
+    "tslint": "^5.9.1",
+    "typescript": "^2.7.2"
+  },
+  "files": [
+    "dist/"
+  ]
+}
