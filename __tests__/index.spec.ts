@@ -1,4 +1,6 @@
-import {convertRecordArrayToRelations, kinshipRelationOrderFunction, PersonRecord} from '../lib';
+import {
+    convertRecordArrayToRelations, Gender, kinshipRelationOrderFunction, PersonRecord, RelationalAncestorRecord
+} from '../lib';
 import {AncestorRecord} from '../lib';
 
 describe('index spec', () => {
@@ -53,6 +55,26 @@ describe('index spec', () => {
                    { person: { name: 'Oğlunun Kızı' }, relations: { CTM: [ 4 ] } },
                    { person: { name: 'Oğlu' }, relations: { MO: [ 3 ], CTM: [ 5 ] } },
                    { person: { name: 'Kendisi' }, relations: { CTM: [ 0 ], CTF: [ 2 ], MO: [ 4 ] } }
+               ]
+           },
+           {
+               data: [
+                   new AncestorRecord('K', { name: 'Kendisi' } as PersonRecord),
+                   new AncestorRecord('O', { name: 'Oğlu', gender: Gender.Male } as PersonRecord),
+                   new AncestorRecord('A', { name: 'Anne' } as PersonRecord),
+                   new AncestorRecord('BA', { name: 'Babasının Annesi' } as PersonRecord),
+                   new AncestorRecord('B', { name: 'Baba' } as PersonRecord),
+                   new AncestorRecord('OP', { name: 'Oğlunun Kızı', gender: Gender.Female } as PersonRecord),
+                   new AncestorRecord('OPO', { name: 'Oğlunun Kızının Oğlu', gender: Gender.Male } as PersonRecord),
+               ],
+               expectedResult: [
+                   { person: { name: 'Anne'}, relations: { MO: [ 6 ] } },
+                   { person: { name: 'Babasının Annesi' }, relations: { MO: [ 2 ] } },
+                   { person: { name: 'Baba' }, relations: { CTM: [ 1 ], FO: [ 6 ] } },
+                   { person: { name: 'Oğlunun Kızının Oğlu', gender: 'E' }, relations: { CTM: [ 4 ] } },
+                   { person: { name: 'Oğlunun Kızı', gender: 'K' }, relations: { MO: [ 3 ], CTF: [ 5 ] } },
+                   { person: { name: 'Oğlu', gender: 'E' }, relations: { FO: [ 4 ], CTM: [ 6 ] } },
+                   { person: { name: 'Kendisi' }, relations: { CTM: [ 0 ], CTF:[ 2 ], MO: [ 5 ] } },
                ]
            },
        ];

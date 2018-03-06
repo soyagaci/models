@@ -1,6 +1,6 @@
 {
   "name": "@soyagaci/models",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Soyağacı ile çalışmak için gerekli olan temel modeller",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
