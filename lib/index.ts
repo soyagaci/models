@@ -8,6 +8,13 @@ export enum DeathStatus {
     Dead = 'Ölüm',
 }
 
+export enum Relation{
+    MotherOf = 'MO',
+    FatherOf = 'FO',
+    ChildToMother = 'CTM',
+    ChildToFather = 'CTF',
+}
+
 // mother of, father of, child to mother, child to father relation types.
 export type RelationType = 'MO' | 'FO' | 'CTM' | 'CTF';
 
@@ -59,14 +66,16 @@ export class AncestorRecord {
     }
 }
 
+export type Relations = { [t in RelationType]: number[]; };
 export class RelationalAncestorRecord {
     constructor(
         readonly person: PersonRecord,
-        readonly relations: { [t in RelationType]: number[]; },
+        readonly relations: Relations,
     ) {
         //
     }
 }
+
 
 export type RelationalAncestorRecords = RelationalAncestorRecord[];
 
@@ -75,7 +84,7 @@ export function kinshipRelationOrderFunction(a: string, b: string){
     else if(!b) return -1;
     else if(!a) return 1;
     else if(a === b) return 0;
-    const mapRelationToNumber = { A: 0, B: 1, K: 2, O: 3, P: 4 };
+    const mapRelationToNumber = { A: 0, B: 1, O: 2, P: 3, K: 4 };
     const [ firstA, firstB ] = [ mapRelationToNumber[a[0]], mapRelationToNumber[b[0]] ];
     if(firstA != firstB) return firstA - firstB;
 
@@ -84,4 +93,53 @@ export function kinshipRelationOrderFunction(a: string, b: string){
         return (lengthA > lengthB ? -1 : 1) * (firstA < mapRelationToNumber.K ? 1 : -1);
 
     return a.localeCompare(b);
+}
+
+function addRelationToAncestorRecord(
+    relations: Relations,
+    relationType: RelationType,
+    index: number,
+): Relations {
+    const ourRelations = relations[relationType] || [];
+    return {...relations, [relationType]: [...ourRelations, index]};
+}
+
+/**
+ *
+ * @param {AncestorRecord[]} records
+ * @return {RelationalAncestorRecords}
+ */
+export function convertRecordArrayToRelations(records: AncestorRecord[]): RelationalAncestorRecords{
+    const sorted = records.sort((a, b) => kinshipRelationOrderFunction(a.relation, b.relation));
+    const defaultValue = { result: [], keys: {} };
+
+    return sorted.reduce((acc, { record, relation }) => {
+        const currentIndex = acc.result.length;
+        const key = relation === 'K' ? '' : relation;
+        const childRelations: RelationType[] = record.gender === Gender.Male ?
+            [Relation.FatherOf, Relation.ChildToFather] :
+            [Relation.MotherOf, Relation.ChildToMother];
+
+        const relationsToAdd = [
+            { siblingKey: key + 'A', ourRelation: Relation.ChildToMother, siblingRelation: Relation.MotherOf },
+            { siblingKey: key + 'B', ourRelation: Relation.ChildToFather, siblingRelation: Relation.FatherOf },
+            { siblingKey: key + 'O', ourRelation: childRelations[0], siblingRelation: childRelations[1] },
+            { siblingKey: key + 'P', ourRelation: childRelations[0], siblingRelation: childRelations[1] },
+        ];
+
+        const relations = relationsToAdd.reduce((relations, { siblingKey, ourRelation, siblingRelation }) => {
+            if(!acc.keys.hasOwnProperty(siblingKey)) return relations;
+            const siblingIndex = acc.keys[siblingKey];
+            const sibling = acc.result[siblingIndex];
+            const ourRelations = addRelationToAncestorRecord(relations, ourRelation, siblingIndex);
+            const siblingRelations = addRelationToAncestorRecord(sibling.relations, siblingRelation, currentIndex);
+
+            sibling.relations = siblingRelations;
+            return ourRelations;
+        }, {} as Relations);
+
+        acc.keys[key] = currentIndex;
+        acc.result[currentIndex] = new RelationalAncestorRecord(record, relations);
+        return acc;
+    }, defaultValue).result;
 }
