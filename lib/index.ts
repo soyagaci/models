@@ -69,3 +69,19 @@ export class RelationalAncestorRecord {
 }
 
 export type RelationalAncestorRecords = RelationalAncestorRecord[];
+
+export function kinshipRelationOrderFunction(a: string, b: string){
+    if(!a && !b) return 0;
+    else if(!b) return -1;
+    else if(!a) return 1;
+    else if(a === b) return 0;
+    const mapRelationToNumber = { A: 0, B: 1, K: 2, O: 3, P: 4 };
+    const [ firstA, firstB ] = [ mapRelationToNumber[a[0]], mapRelationToNumber[b[0]] ];
+    if(firstA != firstB) return firstA - firstB;
+
+    const [lengthA, lengthB] = [ a.length, b.length ];
+    if(lengthA != lengthB)
+        return (lengthA > lengthB ? -1 : 1) * (firstA < mapRelationToNumber.K ? 1 : -1);
+
+    return a.localeCompare(b);
+}
